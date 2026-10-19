@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Emotion Voice Studio</title>
+<style>
+:root{--bg:#faf7fb;--card:#fff;--tx:#241a2b;--mu:#7a6b85;--ac:#b23a8a;--ac2:#f3dff0;--bd:#e6d9ea;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15101a;--card:#211a28;--tx:#f1e8f5;--mu:#a597b0;--ac:#e070b8;--ac2:#3a2644;--bd:#392d44}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:820px;margin:0 auto;padding:16px}
+h1{font-size:1.4rem;margin:.2em 0}
+p.sub{color:var(--mu);margin:0 0 14px;font-size:.92rem}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:14px}
+label{display:block;font-size:.8rem;color:var(--mu);margin:8px 0 3px}
+select,textarea,input[type=range]{width:100%}
+select,textarea{background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:10px;padding:9px;font:inherit}
+textarea{min-height:170px;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:560px){.row{grid-template-columns:1fr}}
+button{border:0;border-radius:10px;padding:10px 16px;font:inherit;font-weight:600;cursor:pointer;background:var(--ac);color:#fff}
+button.sec{background:var(--ac2);color:var(--tx)}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.line{display:flex;gap:10px;align-items:flex-start;padding:9px;border:1px solid var(--bd);border-radius:10px;margin-top:8px}
+.line.on{border-color:var(--ac);background:var(--ac2)}
+.line .t{flex:1;min-width:0;word-break:break-word}
+.tag{display:inline-block;font-size:.72rem;padding:1px 8px;border-radius:99px;background:var(--ac2);color:var(--tx);margin:0 4px 4px 0;border:1px solid var(--bd)}
+.tag.acc{border-color:var(--ac)}.tag.bad{border-color:#d33;color:#d33}
+.line button{padding:6px 11px}
+.chips span{cursor:pointer}
+.note{font-size:.82rem;color:var(--mu)}
+.warn{color:#c2410c;font-size:.85rem;margin-top:6px}
+hr{border:0;border-top:1px solid var(--bd);margin:14px 0}
+.row3{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+</style>
+</head>
+<body>
+<main>
+<h1>Emotion Voice Studio</h1>
+<p class="sub">Write a line, start it with a bracket naming the emotion. Every line can have its own emotion and accent. One female voice, one fixed pitch.</p>
+
+<div class="card">
+<label for="txt">Your script</label>
+<textarea id="txt" spellcheck="false">[love] I missed you all day, you know that?
+[teasing] Oh, so now you want my attention?
+[sensual+whisper] Come closer, let me tell you a secret.
+[sad, british] I really thought you would stay.
+[excited, indian] We did it! We actually did it!
+[pain] That hurt more than I expected.
+[calm] Take a slow breath. Everything is fine.</textarea>
+<div class="note" style="margin-top:6px">Format: <b>[emotion]</b> or <b>[emotion+emotion, accent]</b> then the text. Lines without a bracket use <i>neutral</i>. Click a tag to insert it at the cursor.</div>
+<div class="chips" id="chips" style="margin-top:8px"></div>
+</div>
+
+<div class="card">
+<div class="row">
+<div><label for="voice">Locked female voice (used for every line)</label><select id="voice"></select></div>
+<div><label for="acc">Default accent</label><select id="acc"></select></div>
+</div>
+<div class="row">
+<div><label>Fixed pitch: <b id="pv">1.00</b> (never changes between emotions)</label><input type="range" id="pitch" min="0.6" max="1.6" step="0.05" value="1"></div>
+<div><label>Master speed: <b id="sv">1.00</b></label><input type="range" id="speed" min="0.6" max="1.4" step="0.05" value="1"></div>
+</div>
+<div class="warn" id="warn"></div>
+<div class="btns">
+<button id="play">▶ Speak all</button>
+<button class="sec" id="stop">■ Stop</button>
+<button class="sec" id="test">Test voice</button>
+</div>
+</div>
+
+<div class="card">
+<b>Voice to voice</b>
+<p class="note" style="margin:4px 0 0">Wear headphones so the mic doesn’t pick up the speaker. If the mic is blocked, open this page in its own Chrome or Edge tab.</p>
+<hr>
+<b>Mode 1: speak, get the clean female voice</b>
+<p class="note" style="margin:2px 0 0">Your words are recognised, then spoken by the locked female voice with the emotion you choose. Same voice every time.</p>
+<div class="row">
+<div><label for="rl">I speak in</label><select id="rl"><option value="en-IN">English (India)</option><option value="en-US">English (US)</option><option value="en-GB">English (UK)</option><option value="hi-IN">Hindi</option><option value="bn-IN">Bengali</option></select></div>
+<div><label for="re">Emotion for what I say</label><select id="re"></select></div>
+</div>
+<div class="btns"><button id="ml">🎤 Start listening</button><button class="sec" id="ms">Stop listening</button></div>
+<div class="note" id="mt" style="margin-top:6px"></div>
+<hr>
+<b>Mode 2: live voice changer</b>
+<p class="note" style="margin:2px 0 0">Your own voice and timing, raised in pitch and brightened to sound feminine.</p>
+<div class="row">
+<div><label>Pitch up: <b id="lpv">+5</b> semitones</label><input type="range" id="lp" min="0" max="9" step="0.5" value="5"></div>
+<div><label>Brightness: <b id="lbv">3</b> dB</label><input type="range" id="lb" min="0" max="8" step="0.5" value="3"></div>
+</div>
+<div class="row3"><button class="sec" data-p="3">Subtle</button><button class="sec" data-p="5">Natural</button><button class="sec" data-p="7">Strong</button></div>
+<div class="btns"><button id="ls">🎙 Start live changer</button><button class="sec" id="lx">Stop</button></div>
+<div class="note" id="lt" style="margin-top:6px"></div>
+</div>
+
+<div class="card"><b>Lines</b><div id="lines"></div></div>
+<p class="note">Works offline using your device’s built-in voices. Emotion is created with speed, volume, pauses and breathy fillers, because browser voices cannot truly act. Pitch is never touched, so the voice stays identical. A different accent means a different built-in voice, so it will sound like a different person; leave the accent on one setting if you need the exact same voice everywhere.</p>
+</main>
+
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)};
+var syn=window.speechSynthesis;
+function slow(n){return function(s){var w=s.split(/\s+/),o=[];for(var i=0;i<w.length;i++){o.push(w[i]);if((i+1)%n===0&&i<w.length-1)o.push('…')}return o.join(' ')}}
+function pre(p){return function(s){return p+s}}
+function suf(p){return function(s){return s+p}}
+function chain(){var f=arguments;return function(s){for(var i=0;i<f.length;i++)s=f[i](s);return s}}
+// r=speed multiplier, v=volume, p=pause after (ms). Pitch is intentionally absent.
+var EM={
+neutral:{r:1,v:1,p:350,t:function(s){return s}},
+happy:{r:1.08,v:1,p:300,t:function(s){return s.replace(/\.$/,'!')}},
+excited:{r:1.2,v:1,p:250,t:function(s){return s.replace(/[.]$/,'!')}},
+sad:{r:.8,v:.7,p:700,t:slow(4)},
+angry:{r:1.15,v:1,p:300,t:function(s){return s.replace(/[.!?]*$/,'!')}},
+love:{r:.86,v:.8,p:700,t:slow(5)},
+sensual:{r:.72,v:.65,p:900,t:chain(slow(3),suf(' …'))},
+teasing:{r:.92,v:.9,p:600,t:chain(pre('Hmm… '),function(s){return s.replace(/,/g,'… ')})},
+pain:{r:.8,v:.75,p:800,t:chain(pre('Ah… '),slow(3))},
+moaning:{r:.6,v:.6,p:1000,t:chain(pre('Mmm… aah… '),slow(2),suf(' … mmm…'))},
+whisper:{r:.88,v:.3,p:600,t:function(s){return s}},
+fear:{r:1.1,v:.6,p:500,t:chain(pre('Oh… '),slow(4))},
+laughing:{r:1.05,v:1,p:400,t:chain(pre('Ha ha… '),suf(' ha ha'))},
+calm:{r:.9,v:.8,p:700,t:slow(6)}
+};
+var AC={default:'',indian:'en-IN',british:'en-GB',american:'en-US',australian:'en-AU',irish:'en-IE','south african':'en-ZA',hindi:'hi-IN',bengali:'bn-IN',french:'fr-FR',spanish:'es-ES',german:'de-DE',italian:'it-IT',japanese:'ja-JP'};
+var FEM=/female|woman|zira|samantha|susan|hazel|heera|veena|karen|moira|tessa|fiona|victoria|aria|jenny|neerja|natasha|libby|sonia|catherine|serena|kate|amelie|paulina|monica|elsa|alice|sara|kyoko|google uk english female|google us english|swara|tanishaa|ava|allison|joanna/i;
+var voices=[],cache={},cur=null,queue=[],playing=false,timer=null,hl=true;
+
+function load(){
+ voices=syn.getVoices();
+ var fem=voices.filter(function(v){return FEM.test(v.name)});
+ var list=fem.length?fem.concat(voices.filter(function(v){return fem.indexOf(v)<0})):voices;
+ var sel=$('voice'),keep=sel.value;sel.innerHTML='';
+ list.forEach(function(v){var o=document.createElement('option');o.value=v.name;o.textContent=v.name+' ('+v.lang+')'+(FEM.test(v.name)?' ♀':'');sel.appendChild(o)});
+ if(keep)sel.value=keep;
+ $('warn').textContent=voices.length?(fem.length?'':'No voice is clearly labelled female on this device. Pick a female-sounding one from the list; it stays locked.'):'No voices found yet. Your browser may need a moment, or has no speech voices installed.';
+ cache={};
+}
+function byName(n){return voices.filter(function(v){return v.name===n})[0]}
+function voiceFor(accKey){
+ var base=byName($('voice').value),lang=AC[accKey||$('acc').value];
+ if(!lang)return base;
+ if(cache[lang]!==undefined)return cache[lang]||base;
+ var norm=function(v){return v.lang.replace('_','-').toLowerCase()};
+ var m=voices.filter(function(v){return norm(v)===lang.toLowerCase()||norm(v).indexOf(lang.split('-')[0].toLowerCase()+'-')===0&&lang.length<=2});
+ var f=m.filter(function(v){return FEM.test(v.name)})[0];
+ cache[lang]=f||null; // never use a non-female voice for an accent
+ return f||base;
+}
+function parse(){
+ var out=[];
+ $('txt').value.split(/\n/).forEach(function(raw){
+  if(!raw.trim())return;
+  var m=raw.match(/^\s*\[([^\]]*)\]\s*(.*)$/),ems=[],acc=null,bad=[],text=raw.trim();
+  if(m){text=m[2];
+   m[1].split(/[,;|]/).forEach(function(part){
+    part.split('+').forEach(function(tk){tk=tk.trim().toLowerCase();if(!tk)return;
+     var k=tk==='moan'?'moaning':tk==='sensuality'?'sensual':tk==='tease'?'teasing':tk==='laugh'?'laughing':tk==='scared'?'fear':tk;
+     if(EM[k])ems.push(k);else if(AC[k]!==undefined&&k!=='default')acc=k;else bad.push(tk)})})}
+  if(!ems.length)ems=['neutral'];
+  if(text)out.push({text:text,ems:ems,acc:acc,bad:bad});
+ });
+ return out;
+}
+function render(){
+ var L=parse(),box=$('lines');box.innerHTML='';
+ L.forEach(function(l,i){
+  var d=document.createElement('div');d.className='line';d.id='ln'+i;
+  var t='';l.ems.forEach(function(e){t+='<span class="tag">'+e+'</span>'});
+  if(l.acc)t+='<span class="tag acc">'+l.acc+'</span>';
+  l.bad.forEach(function(b){t+='<span class="tag bad">unknown: '+b.replace(/</g,'&lt;')+'</span>'});
+  d.innerHTML='<button class="sec">▶</button><div class="t">'+t+'<div></div></div>';
+  d.querySelector('.t div').textContent=l.text;
+  d.querySelector('button').onclick=function(){speak([i])};
+  box.appendChild(d)});
+ return L;
+}
+function spoken(l){
+ var r=1,v=1,p=0,s=l.text;
+ l.ems.forEach(function(e){var c=EM[e];r*=c.r;v=Math.min(v,c.v);p=Math.max(p,c.p);s=c.t(s)});
+ return{text:s,rate:Math.max(.4,Math.min(2,r*parseFloat($('speed').value))),vol:v,pause:p};
+}
+function stop(){playing=false;queue=[];clearTimeout(timer);syn.cancel();document.querySelectorAll('.line.on').forEach(function(e){e.classList.remove('on')})}
+function speak(idx){
+ stop();hl=true;var L=parse();
+ queue=(idx||L.map(function(_,i){return i})).slice();playing=true;next(L);
+}
+function next(L){
+ if(!playing||!queue.length){playing=false;return}
+ var i=queue.shift(),l=L[i],s=spoken(l);
+ document.querySelectorAll('.line.on').forEach(function(e){e.classList.remove('on')});
+ var el=hl?$('ln'+i):null;if(el){el.classList.add('on');el.scrollIntoView({block:'nearest'})}
+ var u=new SpeechSynthesisUtterance(s.text),v=voiceFor(l.acc);
+ if(v){u.voice=v;u.lang=v.lang}
+ u.pitch=parseFloat($('pitch').value); // identical for every line
+ u.rate=s.rate;u.volume=s.vol;
+ u.onend=u.onerror=function(){if(!playing)return;timer=setTimeout(function(){next(L)},s.pause)};
+ cur=u;syn.speak(u);
+}
+// ---- Voice to voice: Mode 1 (recognise, then re-speak in the locked female voice)
+var SR=window.SpeechRecognition||window.webkitSpeechRecognition,rec=null,listening=false,micArr=[];
+Object.keys(EM).forEach(function(k){var o=document.createElement('option');o.value=k;o.textContent=k;$('re').appendChild(o)});
+function micSay(item){
+ if(playing&&!hl){micArr.push(item);queue.push(micArr.length-1);return}
+ stop();hl=false;micArr=[item];queue=[0];playing=true;next(micArr);
+}
+$('ml').onclick=function(){
+ if(!SR){$('mt').textContent='Speech recognition is not supported in this browser. Use Chrome or Edge.';return}
+ if(listening)return;
+ rec=new SR();rec.lang=$('rl').value;rec.continuous=true;rec.interimResults=true;
+ rec.onresult=function(e){
+  var interim='';
+  for(var i=e.resultIndex;i<e.results.length;i++){
+   var r=e.results[i];
+   if(r.isFinal){
+    var tx=r[0].transcript.trim();if(!tx||playing)continue;
+    var em=$('re').value,lg=$('rl').value,t=$('txt');
+    t.value+=(t.value&&t.value.slice(-1)!=='\n'?'\n':'')+'['+em+'] '+tx;render();
+    micSay({text:tx,ems:[em],acc:lg==='hi-IN'?'hindi':lg==='bn-IN'?'bengali':null,bad:[]});
+    $('mt').textContent='You said: '+tx;
+   }else interim+=r[0].transcript;
+  }
+  if(interim)$('mt').textContent='…'+interim;
+ };
+ rec.onerror=function(e){$('mt').textContent='Mic error: '+e.error+(e.error==='not-allowed'?' (allow the microphone, or open this page in its own tab)':'')};
+ rec.onend=function(){if(listening){try{rec.start()}catch(x){}}};
+ listening=true;try{rec.start()}catch(x){}
+ $('mt').textContent='Listening… speak a sentence, then pause.';
+};
+$('ms').onclick=function(){listening=false;if(rec)rec.stop();$('mt').textContent='Stopped listening.'};
+// ---- Mode 2: live pitch-shift voice changer (pure Web Audio, no downloads)
+function mkFade(c,a,f){var r=c.sampleRate,l1=Math.round(a*r),l2=Math.round((a-2*f)*r),b=c.createBuffer(1,l1+l2,r),p=b.getChannelData(0),fl=f*r,i2=l1-fl;for(var i=0;i<l1;i++)p[i]=i<fl?Math.sqrt(i/fl):i>=i2?Math.sqrt(1-(i-i2)/fl):1;return b}
+function mkDelay(c,a){var r=c.sampleRate,l=Math.round(a*r),b=c.createBuffer(1,l,r),p=b.getChannelData(0);for(var i=0;i<l;i++)p[i]=(l-i)/l;return b}
+function shifter(c){
+ var B=.1,F=.05,inp=c.createGain(),out=c.createGain(),db=mkDelay(c,B),fb=mkFade(c,B,F);
+ var m1=c.createBufferSource(),m2=c.createBufferSource(),f1=c.createBufferSource(),f2=c.createBufferSource();
+ m1.buffer=db;m2.buffer=db;f1.buffer=fb;f2.buffer=fb;
+ [m1,m2,f1,f2].forEach(function(s){s.loop=true});
+ var g1=c.createGain(),g2=c.createGain(),d1=c.createDelay(1),d2=c.createDelay(1),x1=c.createGain(),x2=c.createGain();
+ g1.gain.value=0;g2.gain.value=0;d1.delayTime.value=0;d2.delayTime.value=0;x1.gain.value=0;x2.gain.value=0;
+ m1.connect(g1);g1.connect(d1.delayTime);m2.connect(g2);g2.connect(d2.delayTime);
+ f1.connect(x1.gain);f2.connect(x2.gain);
+ inp.connect(d1);inp.connect(d2);d1.connect(x1);d2.connect(x2);x1.connect(out);x2.connect(out);
+ var t=c.currentTime+.05,t2=t+B-F;m1.start(t);f1.start(t);m2.start(t2);f2.start(t2);
+ return{in:inp,out:out,g1:g1,g2:g2};
+}
+var lv=null;
+function setLive(){
+ var s=parseFloat($('lp').value),b=parseFloat($('lb').value);
+ $('lpv').textContent='+'+s;$('lbv').textContent=b;
+ if(!lv)return;
+ var D=(Math.pow(2,s/12)-1)*.1,t=lv.c.currentTime;
+ lv.g1.gain.setTargetAtTime(D,t,.02);lv.g2.gain.setTargetAtTime(D,t,.02);lv.hs.gain.setTargetAtTime(b,t,.02);
+}
+$('lp').oninput=setLive;$('lb').oninput=setLive;
+document.querySelectorAll('[data-p]').forEach(function(b){b.onclick=function(){$('lp').value=b.getAttribute('data-p');setLive()}});
+$('ls').onclick=function(){
+ if(lv)return;
+ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){$('lt').textContent='Microphone access is not available here.';return}
+ navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}}).then(function(st){
+  var c=new (window.AudioContext||window.webkitAudioContext)(),src=c.createMediaStreamSource(st);
+  var hp=c.createBiquadFilter();hp.type='highpass';hp.frequency.value=90;
+  var S=shifter(c);
+  var ls=c.createBiquadFilter();ls.type='lowshelf';ls.frequency.value=200;ls.gain.value=-3;
+  var hs=c.createBiquadFilter();hs.type='highshelf';hs.frequency.value=3200;hs.gain.value=0;
+  var cp=c.createDynamicsCompressor();
+  src.connect(hp);hp.connect(S.in);S.out.connect(ls);ls.connect(hs);hs.connect(cp);cp.connect(c.destination);
+  lv={c:c,st:st,g1:S.g1,g2:S.g2,hs:hs};setLive();
+  $('lt').textContent='Live. Speak now, with headphones on.';
+ }).catch(function(e){$('lt').textContent='Could not open the microphone ('+(e&&e.name||'error')+'). Allow it, or open this page in its own tab.'});
+};
+$('lx').onclick=function(){if(!lv)return;lv.st.getTracks().forEach(function(t){t.stop()});lv.c.close();lv=null;$('lt').textContent='Stopped.'};
+// UI setup
+Object.keys(AC).forEach(function(k){var o=document.createElement('option');o.value=k;o.textContent=k==='default'?'Same as selected voice':k.charAt(0).toUpperCase()+k.slice(1);$('acc').appendChild(o)});
+Object.keys(EM).forEach(function(k){var s=document.createElement('span');s.className='tag';s.textContent=k;s.onclick=function(){
+ var t=$('txt'),a=t.selectionStart,txt=t.value,ls=txt.lastIndexOf('\n',a-1)+1;
+ t.value=txt.slice(0,ls)+'['+k+'] '+txt.slice(ls).replace(/^\s*\[[^\]]*\]\s*/,'');t.focus();render()};$('chips').appendChild(s)});
+$('pitch').oninput=function(){$('pv').textContent=(+this.value).toFixed(2)};
+$('speed').oninput=function(){$('sv').textContent=(+this.value).toFixed(2)};
+$('txt').oninput=render;
+$('play').onclick=function(){speak()};
+$('stop').onclick=stop;
+$('test').onclick=function(){stop();var u=new SpeechSynthesisUtterance('Hello, this is my voice. It will stay exactly like this.'),v=byName($('voice').value);if(v){u.voice=v;u.lang=v.lang}u.pitch=parseFloat($('pitch').value);u.rate=parseFloat($('speed').value);syn.speak(u)};
+$('voice').onchange=function(){cache={}};
+if(!syn){$('warn').textContent='Speech synthesis is not supported in this browser.'}
+else{load();syn.onvoiceschanged=load}
+render();
+})();
+</script>
+</body>
+</html>
